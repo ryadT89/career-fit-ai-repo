@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+    // Further reading:
+    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+    url      = env("DATABASE_URL")
+}
+
+// Necessary for Next auth
+model Account {
+    id                       String  @id @default(cuid())
+    userId                   String
+    type                     String
+    provider                 String
+    providerAccountId        String
+    refresh_token            String? // @db.Text
+    access_token             String? // @db.Text
+    expires_at               Int?
+    token_type               String?
+    scope                    String?
+    id_token                 String? // @db.Text
+    session_state            String?
+    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    refresh_token_expires_in Int?
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+model Utilisateur {
+  id              Int              @id @default(autoincrement())
+  nom             String
+  email           String           @unique
+  motDePasse      String
+  type            TypeUtilisateur  // "Recruteur" or "Candidat"
+  dateInscription DateTime         @default(now())
+  derniereConnexion DateTime?
+
+  candidatProfile  ProfilsCandidats?  @relation("CandidatToUtilisateur", fields: [id], references: [id])
+  recruteurProfile ProfilsRecruteurs? @relation("RecruteurToUtilisateur", fields: [id], references: [id])
+
+  @@map("utilisateurs")
+}
+
+model ProfilsCandidats {
+  id              Int               @id @default(autoincrement())
+  utilisateur     Utilisateur       @relation("CandidatToUtilisateur", fields: [id], references: [id])
+  competences     String
+  experience      Int
+  localisation    String
+  secteursInteret String?
+  cv              String?
+
+  candidatures    Candidature[]
+  correspondances Correspondance[]
+
+  @@map("profils_candidats")
+}
+
+model ProfilsRecruteurs {
+  id              Int               @id @default(autoincrement())
+  utilisateur     Utilisateur       @relation("RecruteurToUtilisateur", fields: [id], references: [id])
+  entreprise      String
+  siteWeb         String?
+  secteur         String
+  description     String?
+
+  offres          Offre[]
+  invitations     Invitation[]
+
+  @@map("profils_recruteurs")
+}
+
+model Offre {
+  id                Int             @id @default(autoincrement())
+  titre             String
+  description       String
+  recruteurId       Int
+  recruteur         ProfilsRecruteurs @relation(fields: [recruteurId], references: [id])
+  localisation      String
+  statut            StatutOffre     // Enum for "en_cours", "pourvu"
+  competencesRequises String
+  experienceRequise Int
+
+  candidatures      Candidature[]
+  correspondances   Correspondance[]
+  invitations       Invitation[]
+
+  @@map("offres")
+}
+
+model Candidature {
+  id              Int             @id @default(autoincrement())
+  offreId         Int
+  offre           Offre           @relation(fields: [offreId], references: [id])
+  candidatId      Int
+  candidat        ProfilsCandidats @relation(fields: [candidatId], references: [id])
+  dateCandidature DateTime        @default(now())
+  statut          StatutCandidature  // Enum for "soumis", "en_cours", "rejete", "accepte"
+
+  @@map("candidatures")
+}
+
+model Invitation {
+  id              Int             @id @default(autoincrement())
+  recruteurId     Int
+  recruteur       ProfilsRecruteurs @relation(fields: [recruteurId], references: [id])
+  candidatId      Int
+  candidat        ProfilsCandidats @relation(fields: [candidatId], references: [id])
+  offreId         Int
+  offre           Offre           @relation(fields: [offreId], references: [id])
+  message         String?
+  dateInvit       DateTime        @default(now())
+
+  @@map("invitations")
+}
+
+model Correspondance {
+  id              Int             @id @default(autoincrement())
+  offreId         Int
+  offre           Offre           @relation(fields: [offreId], references: [id])
+  candidatId      Int
+  candidat        ProfilsCandidats @relation(fields: [candidatId], references: [id])
+  pertinenceScore Float
+  dateCorrespondance DateTime     @default(now())
+
+  @@map("correspondances")
+}
+
+enum TypeUtilisateur {
+  Recruteur
+  Candidat
+}
+
+enum StatutOffre {
+  en_cours
+  pourvu
+}
+
+enum StatutCandidature {
+  soumis
+  en_cours
+  rejete
+  accepte
+}
