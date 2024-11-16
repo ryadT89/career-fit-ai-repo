@@ -13,5 +13,7 @@ export default {
   plugins: [
     require("daisyui")
   ],
-  darkMode: "selector",
+  daisyui: {
+    themes: ["light"]
+  },
 } satisfies Config;

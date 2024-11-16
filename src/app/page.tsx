@@ -1,20 +1,12 @@
-import { NavBar } from "@/app/_components/global/navbar";
 import { auth } from "@/server/auth";
-import { api, HydrateClient } from "@/trpc/server";
+import { api } from "@/trpc/server";
+import { LandingPage } from "@/app/_components/landing-page";
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await auth();
-
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
+export default async function Page() {
 
   return (
-    <HydrateClient>
-      <main className="">
-        <NavBar />
+      <main className="max-w-screen-xl m-auto">
+        <LandingPage />
       </main>
-    </HydrateClient>
   );
 }

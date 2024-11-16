@@ -1,16 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
     provider = "sqlite"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
 }
 
@@ -21,12 +14,12 @@ model Account {
     type                     String
     provider                 String
     providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
+    refresh_token            String?
+    access_token             String?
     expires_at               Int?
     token_type               String?
     scope                    String?
-    id_token                 String? // @db.Text
+    id_token                 String?
     session_state            String?
     user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
@@ -42,7 +35,6 @@ model Session {
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 model VerificationToken {
     identifier String
     token      String   @unique
@@ -51,119 +43,109 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-model Utilisateur {
-  id              Int              @id @default(autoincrement())
-  nom             String
-  email           String           @unique
-  motDePasse      String
-  type            TypeUtilisateur  // "Recruteur" or "Candidat"
-  dateInscription DateTime         @default(now())
-  derniereConnexion DateTime?
+model User {
+    id               String   @id @default(cuid())
+    name             String
+    email            String   @unique
+    password         String
+    userType         String?   // Either "Recruiter" or "Candidate"
+    registeredAt     DateTime @default(now())
+    lastLogin        DateTime?
 
-  candidatProfile  ProfilsCandidats?  @relation("CandidatToUtilisateur", fields: [id], references: [id])
-  recruteurProfile ProfilsRecruteurs? @relation("RecruteurToUtilisateur", fields: [id], references: [id])
+    candidateProfile CandidateProfile?
+    recruiterProfile RecruiterProfile?
 
-  @@map("utilisateurs")
+    accounts         Account[]
+    sessions         Session[]
+
+    @@map("users")
 }
 
-model ProfilsCandidats {
-  id              Int               @id @default(autoincrement())
-  utilisateur     Utilisateur       @relation("CandidatToUtilisateur", fields: [id], references: [id])
-  competences     String
-  experience      Int
-  localisation    String
-  secteursInteret String?
-  cv              String?
+model CandidateProfile {
+    id                   Int               @id @default(autoincrement())
+    userId               String            @unique
+    user                 User              @relation(fields: [userId], references: [id])
+    skills               String
+    experience           Int
+    location             String
+    interestSectors      String?
+    resume               String?
 
-  candidatures    Candidature[]
-  correspondances Correspondance[]
+    applications         Application[]
+    matches              Match[]
+    candidateInvitations Invitation[]      @relation("CandidateInvitations")
 
-  @@map("profils_candidats")
+    @@map("candidate_profiles")
 }
 
-model ProfilsRecruteurs {
-  id              Int               @id @default(autoincrement())
-  utilisateur     Utilisateur       @relation("RecruteurToUtilisateur", fields: [id], references: [id])
-  entreprise      String
-  siteWeb         String?
-  secteur         String
-  description     String?
+model RecruiterProfile {
+    id                   Int               @id @default(autoincrement())
+    userId               String            @unique
+    user                 User              @relation(fields: [userId], references: [id])
+    company              String
+    website              String?
+    sector               String
+    description          String?
 
-  offres          Offre[]
-  invitations     Invitation[]
+    jobListings          JobListing[]
+    invitations          Invitation[]      @relation("RecruiterInvitations")
 
-  @@map("profils_recruteurs")
-}
-
-model Offre {
-  id                Int             @id @default(autoincrement())
-  titre             String
-  description       String
-  recruteurId       Int
-  recruteur         ProfilsRecruteurs @relation(fields: [recruteurId], references: [id])
-  localisation      String
-  statut            StatutOffre     // Enum for "en_cours", "pourvu"
-  competencesRequises String
-  experienceRequise Int
-
-  candidatures      Candidature[]
-  correspondances   Correspondance[]
-  invitations       Invitation[]
-
-  @@map("offres")
-}
-
-model Candidature {
-  id              Int             @id @default(autoincrement())
-  offreId         Int
-  offre           Offre           @relation(fields: [offreId], references: [id])
-  candidatId      Int
-  candidat        ProfilsCandidats @relation(fields: [candidatId], references: [id])
-  dateCandidature DateTime        @default(now())
-  statut          StatutCandidature  // Enum for "soumis", "en_cours", "rejete", "accepte"
-
-  @@map("candidatures")
+    @@map("recruiter_profiles")
 }
 
 model Invitation {
-  id              Int             @id @default(autoincrement())
-  recruteurId     Int
-  recruteur       ProfilsRecruteurs @relation(fields: [recruteurId], references: [id])
-  candidatId      Int
-  candidat        ProfilsCandidats @relation(fields: [candidatId], references: [id])
-  offreId         Int
-  offre           Offre           @relation(fields: [offreId], references: [id])
-  message         String?
-  dateInvit       DateTime        @default(now())
+    id                   Int               @id @default(autoincrement())
+    recruiterId          Int
+    recruiter            RecruiterProfile  @relation("RecruiterInvitations", fields: [recruiterId], references: [id])
+    candidateId          Int
+    candidate            CandidateProfile  @relation("CandidateInvitations", fields: [candidateId], references: [id])
+    jobListingId         Int
+    jobListing           JobListing        @relation(fields: [jobListingId], references: [id])
+    message              String?
+    invitedAt            DateTime          @default(now())
 
-  @@map("invitations")
+    @@map("invitations")
 }
 
-model Correspondance {
-  id              Int             @id @default(autoincrement())
-  offreId         Int
-  offre           Offre           @relation(fields: [offreId], references: [id])
-  candidatId      Int
-  candidat        ProfilsCandidats @relation(fields: [candidatId], references: [id])
-  pertinenceScore Float
-  dateCorrespondance DateTime     @default(now())
+model JobListing {
+    id                Int              @id @default(autoincrement())
+    title             String
+    description       String
+    recruiterId       Int
+    recruiter         RecruiterProfile @relation(fields: [recruiterId], references: [id])
+    location          String
+    status            String           // "open" or "filled"
+    createdAt         DateTime @default(now())
+    requiredSkills    String
+    requiredExperience Int
 
-  @@map("correspondances")
+    applications      Application[]
+    matches           Match[]
+    invitations       Invitation[]
+
+    @@map("job_listings")
 }
 
-enum TypeUtilisateur {
-  Recruteur
-  Candidat
+model Application {
+    id                Int               @id @default(autoincrement())
+    jobListingId      Int
+    jobListing        JobListing        @relation(fields: [jobListingId], references: [id])
+    candidateId       Int
+    candidate         CandidateProfile  @relation(fields: [candidateId], references: [id])
+    appliedAt         DateTime          @default(now())
+    status            String            // "submitted", "in_progress", "rejected", "accepted"
+
+    @@map("applications")
 }
 
-enum StatutOffre {
-  en_cours
-  pourvu
-}
+model Match {
+    id               Int               @id @default(autoincrement())
+    jobListingId     Int
+    jobListing       JobListing        @relation(fields: [jobListingId], references: [id])
+    candidateId      Int
+    candidate        CandidateProfile  @relation(fields: [candidateId], references: [id])
+    relevanceScore   Float
+    matchedAt        DateTime          @default(now())
 
-enum StatutCandidature {
-  soumis
-  en_cours
-  rejete
-  accepte
+    @@map("matches")
 }
