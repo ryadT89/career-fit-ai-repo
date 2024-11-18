@@ -24,17 +24,16 @@ export const RegisterForm = () => {
         password: "",
     });
 
-    const router = useRouter();
-
     const registerUser = api.user.createUser.useMutation({
         onSuccess: async () => {
             setLoading(false);
-            const res = await signIn('credentials', { email: formData.email, password: formData.password, redirect: false });
-            if (res?.error) {
-                console.error(res.error);
-            } else {
-                router.push('/');
-            }
+            await signIn('credentials', { email: formData.email, password: formData.password, redirect: false }).then((res) => {
+                if (res?.error) {
+                    setError(res.error);
+                } else {
+                    window.location.reload();
+                }
+            });
         },
         onError: (error) => {
             setError(error.message);

@@ -34,7 +34,7 @@ export function SigninForm() {
             if (res?.error) {
                 setError(res.error);
             } else {
-                router.push('/');
+                window.location.reload();
             }
         })
     }

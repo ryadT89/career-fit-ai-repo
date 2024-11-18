@@ -1,6 +1,7 @@
 import { formatDistance } from 'date-fns';
+import { ProfilePicture } from '../global/profile-picture';
 
-export function Post({title, description, jobStatus, user, time}: {title: string, description: string, jobStatus: string, user: string, time: Date}) {
+export function Post({title, description, jobStatus, user, image, time}: {title: string, description: string, jobStatus: string, user: string, image: string, time: Date}) {
 
     const truncate = (str: string, n: number) => {
         return str.length > n ? str.substr(0, n - 1) + '...' : str;
@@ -19,6 +20,7 @@ export function Post({title, description, jobStatus, user, time}: {title: string
             }
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
+                    <ProfilePicture className='w-8 h-8' src={image || ''} />
                     <div className="text-sm font-bold">{user}</div>
                 </div>
                 <div className="text-sm text-gray-500">{relativeTime}</div>

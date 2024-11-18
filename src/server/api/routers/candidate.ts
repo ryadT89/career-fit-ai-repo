@@ -17,15 +17,26 @@ export const candidateProfileRouter = createTRPCRouter({
 
   // Fetch a single candidate profile by ID
   getCandidateProfileById: publicProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
       return ctx.db.candidateProfile.findUnique({
-        where: { userId: input.userId },
+        where: { id: input.id },
         include: {
           user: true,
         },
       });
     }),
+
+  getCandidateProfileByUserId: publicProcedure
+  .input(z.object({ userId: z.string() }))
+  .query(async ({ input, ctx }) => {
+    return ctx.db.candidateProfile.findUnique({
+      where: { userId: input.userId },
+      include: {
+        user: true,
+      },
+    });
+  }),
 
   // Create a new job listing
   createCandidateProfile: publicProcedure

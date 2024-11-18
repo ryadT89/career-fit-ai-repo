@@ -4,3 +4,4 @@ export { jobListingRouter } from "@/server/api/routers/jobListing";
 export { recuiterProfileRouter } from "@/server/api/routers/recruiter";
 export { candidateProfileRouter } from "@/server/api/routers/candidate";
 export { applicationRouter } from "@/server/api/routers/application";
+export { invitationRouter } from "@/server/api/routers/invitation";

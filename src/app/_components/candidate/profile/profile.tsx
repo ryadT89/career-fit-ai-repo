@@ -3,23 +3,24 @@
 import { useSession } from "next-auth/react"
 import { api } from "@/trpc/react";
 import { useEffect, useState } from "react";
-import { Error } from "../global/error";
-import { Success } from "../global/success";
+import { Error } from "../../global/error";
+import { Success } from "../../global/success";
 import { ProfileInput } from "./profile-input";
+import ProfilePictureUpload from "../../global/profile-picture-upload";
 
 export function Profile() {
     const { data: session } = useSession();
 
-    const candidateData: { data: any } = api.candidate.getCandidateProfileById.useQuery({
-        userId: session?.user.id ? session?.user.id : ''
+    const {data: candidateData, refetch: refetchUser} = api.candidate.getCandidateProfileByUserId.useQuery({
+        userId: session?.user.id || ''
     });
-    const [candidateProfile, setCandidateProfile] = useState(candidateData.data || null);
+    const [candidateProfile, setCandidateProfile] = useState<any>(null);
     const [error, setError] = useState<string>('');
     const [success, setSuccess] = useState<boolean>(false);
 
     useEffect(() => {
-        setCandidateProfile(candidateData.data);
-    }, [candidateData.data]);
+        setCandidateProfile(candidateData);
+    }, [candidateData]);
 
     const userUpdateMutation = api.user.updateUser.useMutation({
         onSuccess: () => {
@@ -76,12 +77,12 @@ export function Profile() {
 
     const handleSubmit = async () => {
         console.log(candidateProfile);
-        if (candidateProfile?.user.name === '' || candidateProfile?.user.email === '' || candidateProfile?.company === '' || candidateProfile?.sector === '') {
+        if (candidateProfile?.user.name === '' || candidateProfile?.user.email === '' || candidateProfile?.skills === '' || candidateProfile?.experience === 0 || candidateProfile?.location === '' || candidateProfile?.interestSectors === '') {
             setError('Required fields are missing');
             return;
         }
 
-        delete candidateProfile.user.password;
+        delete candidateProfile?.user.password;
 
         if (candidateProfile) {
             userUpdateMutation.mutate({ ...candidateProfile.user });
@@ -100,6 +101,7 @@ export function Profile() {
                         <p>Update your information below.</p>
                     </div>
                     <div className="w-2/4 flex flex-col gap-4 mt-8">
+                        <ProfilePictureUpload refetchUser={refetchUser} userId={session?.user.id || ''} userImage={candidateProfile?.user.image || ''} />
                         <ProfileInput onChange={handleChange} defaultValue={candidateProfile?.user.name} placeholder="Name" name="name" />
                         <ProfileInput onChange={handleChange} defaultValue={candidateProfile?.user.email} placeholder="Email" name="email" />
                         <ProfileInput onChange={handleChange} defaultValue={candidateProfile?.skills} placeholder="Skills" name="skills" />

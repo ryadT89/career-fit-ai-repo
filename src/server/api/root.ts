@@ -1,4 +1,4 @@
-import { postRouter, userRouter, jobListingRouter, recuiterProfileRouter, candidateProfileRouter, applicationRouter } from "@/server/api/routers";
+import { postRouter, userRouter, jobListingRouter, recuiterProfileRouter, candidateProfileRouter, applicationRouter, invitationRouter } from "@/server/api/routers";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
 /**
@@ -13,6 +13,7 @@ export const appRouter = createTRPCRouter({
   recruiter: recuiterProfileRouter,
   candidate: candidateProfileRouter,
   application: applicationRouter,
+  invitation: invitationRouter,
 });
 
 // export type definition of API

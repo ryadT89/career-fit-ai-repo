@@ -1,11 +1,12 @@
 'use client'
 
-import { Post } from './post';
+import { Post } from '../post';
 import { useSession } from 'next-auth/react';
 import { api } from '@/trpc/react';
 import { useRef, useState, useMemo } from 'react';
 import { OfferModal } from './offer-modal';
 import { sleep } from '@trpc/server/unstable-core-do-not-import';
+import { HiFolderOpen } from 'react-icons/hi';
 
 export function MyOffers() {
     const { data: session } = useSession();
@@ -27,7 +28,7 @@ export function MyOffers() {
         setSelectedOffer(id);
         const modal = modalRef.current;
         if (!modal) return null;
-        sleep(1000);
+
         modal.showModal();
     }
 
@@ -72,25 +73,34 @@ export function MyOffers() {
                     </div>
                 }
 
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-                    {filteredOffers?.map((offer) => (
-                        <span onClick={() => showModal(offer.id)} key={offer.id}>
-                            <Post
-                                title={offer.title}
-                                description={offer.description}
-                                jobStatus={offer.status}
-                                user={recruiterData?.user?.name || ''}
-                                time={offer.createdAt}
-                            />
-                        </span>
-                    ))}
-                    <OfferModal
-                        modalRef={modalRef}
-                        refetchOffers={refetchOffers}
-                        jobListingId={selectedOffer}
-                        userName={recruiterData?.user?.name || ''}
-                    />
-                </div>
+                {offers?.length === 0 ?
+                    <div className="flex justify-center items-center h-96 text-2xl font-bold">
+                        <HiFolderOpen className="text-6xl mr-4" />
+                        <span>No job offers</span>
+                    </div>
+                    :
+
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+                        {filteredOffers?.map((offer) => (
+                            <span onClick={() => showModal(offer.id)} key={offer.id}>
+                                <Post
+                                    title={offer.title}
+                                    description={offer.description}
+                                    jobStatus={offer.status}
+                                    user={recruiterData?.user?.name || ''}
+                                    image={recruiterData?.user?.image || ''}
+                                    time={offer.createdAt}
+                                />
+                            </span>
+                        ))}
+                        <OfferModal
+                            modalRef={modalRef}
+                            refetchOffers={refetchOffers}
+                            jobListingId={selectedOffer}
+                            userName={recruiterData?.user?.name || ''}
+                        />
+                    </div>
+                }
             </div>
         </>
     );

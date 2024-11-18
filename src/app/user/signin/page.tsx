@@ -6,12 +6,8 @@ import { SigninForm } from "@/app/_components/auth/signin/signin-form";
 export default async function Page() {
 
     const session = await auth();
-    if (session) {
-        if (session.user.userType){
-            redirect('/');
-        } else {
-            redirect('/user/complete');
-        }
+    if (session && !session.user.userType) {
+        redirect('/user/complete');
     }
 
     return (

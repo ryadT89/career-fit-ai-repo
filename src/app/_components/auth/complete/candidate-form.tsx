@@ -43,7 +43,7 @@ export function CandidateForm() {
     const candidateMutation = api.candidate.createCandidateProfile.useMutation({
         onSuccess: () => {
             console.log("Candidate Profile Created");
-            router.push('/');
+            window.location.reload();
         },
         onError: (error: any) => {
             console.error(error);

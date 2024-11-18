@@ -51,6 +51,7 @@ model User {
     userType         String?   // Either "Recruiter" or "Candidate"
     registeredAt     DateTime @default(now())
     lastLogin        DateTime?
+    image            String?
 
     candidateProfile CandidateProfile?
     recruiterProfile RecruiterProfile?
@@ -99,8 +100,6 @@ model Invitation {
     recruiter            RecruiterProfile  @relation("RecruiterInvitations", fields: [recruiterId], references: [id])
     candidateId          Int
     candidate            CandidateProfile  @relation("CandidateInvitations", fields: [candidateId], references: [id])
-    jobListingId         Int
-    jobListing           JobListing        @relation(fields: [jobListingId], references: [id])
     message              String?
     invitedAt            DateTime          @default(now())
 
@@ -121,7 +120,6 @@ model JobListing {
 
     applications      Application[]
     matches           Match[]
-    invitations       Invitation[]
 
     @@map("job_listings")
 }
@@ -133,7 +131,8 @@ model Application {
     candidateId       Int
     candidate         CandidateProfile  @relation(fields: [candidateId], references: [id])
     appliedAt         DateTime          @default(now())
-    status            String            // "submitted", "in_progress", "rejected", "accepted"
+    status            String            // "applied", "rejected", "accepted"
+    coverLetter       String
 
     @@map("applications")
 }

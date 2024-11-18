@@ -36,7 +36,7 @@ export const RecruiterForm = () => {
     const recruiterMutation = api.recruiter.createRecruiterProfile.useMutation({
         onSuccess: () => {
             console.log("Recruiter Profile Created");
-            router.push('/');
+            window.location.reload();
         },
         onError: (error: any) => {
             console.error(error);
@@ -46,6 +46,7 @@ export const RecruiterForm = () => {
     const userMutation = api.user.updateUser.useMutation({
         onSuccess: () => {
             console.log("User Type Updated");
+            window.location.reload();
         },
         onError: (error: any) => {
             setError(error);

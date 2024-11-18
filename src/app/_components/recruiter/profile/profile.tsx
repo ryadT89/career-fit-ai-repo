@@ -5,23 +5,24 @@ import { api } from "@/trpc/react";
 import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/router";
 import { use, useEffect, useState } from "react";
-import { Error } from "../global/error";
-import { Success } from "../global/success";
+import { Error } from "../../global/error";
+import { Success } from "../../global/success";
 import { ProfileInput } from "./profile-input";
+import ProfilePictureUpload from "../../global/profile-picture-upload";
 
 export function Profile() {
     const { data: session } = useSession();
 
-    const recruiterData: { data: any } = api.recruiter.getRecuiterProfileById.useQuery({
+    const {data: recruiterData, refetch: refetchUser} = api.recruiter.getRecuiterProfileById.useQuery({
         userId: session?.user.id ? session?.user.id : ''
     });
-    const [recruiterProfile, setRecruiterProfile] = useState(recruiterData.data || null);
+    const [recruiterProfile, setRecruiterProfile] = useState<any>(null);
     const [error, setError] = useState<string>('');
     const [success, setSuccess] = useState<boolean>(false);
 
     useEffect(() => {
-        setRecruiterProfile(recruiterData.data);
-    }, [recruiterData.data]);
+        setRecruiterProfile(recruiterData);
+    }, [recruiterData]);
 
     const userUpdateMutation = api.user.updateUser.useMutation({
         onSuccess: () => {
@@ -94,6 +95,7 @@ export function Profile() {
                     <div className="w-2/4 flex flex-col gap-4 mt-8">
                         {success && <Success message="Profile Updated" />}
                         {error && <Error message={error} />}
+                        <ProfilePictureUpload refetchUser={refetchUser} userId={session?.user.id || ''} userImage={recruiterProfile?.user.image || ''} />
                         <ProfileInput onChange={handleChange} defaultValue={recruiterProfile?.user.name} placeholder="Name" name="name" />
                         <ProfileInput onChange={handleChange} defaultValue={recruiterProfile?.user.email} placeholder="Email" name="email" />
                         <ProfileInput onChange={handleChange} defaultValue={recruiterProfile?.company} placeholder="Company" name="company" />

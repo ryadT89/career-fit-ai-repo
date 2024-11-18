@@ -26,6 +26,17 @@ export const recuiterProfileRouter = createTRPCRouter({
         },
       });
     }),
+  
+    getRecruiterProfileByUserId: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      return ctx.db.recruiterProfile.findUnique({
+        where: { userId: input.userId },
+        include: {
+          user: true,
+        },
+      });
+    }),
 
   // Create a new job listing
   createRecruiterProfile: publicProcedure

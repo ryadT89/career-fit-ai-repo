@@ -17,7 +17,6 @@ export const jobListingRouter = createTRPCRouter({
           },
           applications: true,
           matches: true,
-          invitations: true,
         },
       });
     }),
@@ -32,7 +31,6 @@ export const jobListingRouter = createTRPCRouter({
             recruiter: true,
             applications: true,
             matches: true,
-            invitations: true,
           },
         });
       }),
@@ -47,7 +45,6 @@ export const jobListingRouter = createTRPCRouter({
             recruiter: true,
             applications: true,
             matches: true,
-            invitations: true,
           },
         });
       }),

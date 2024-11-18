@@ -1,4 +1,4 @@
-import { Profile } from "@/app/_components/recruiter/profile"
+import { Profile } from "@/app/_components/recruiter/profile/profile"
 import { auth } from "@/server/auth"
 import { redirect } from "next/navigation"
 

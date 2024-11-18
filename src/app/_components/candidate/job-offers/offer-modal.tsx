@@ -1,47 +1,45 @@
 'use client'
 
-import { HiDocumentRemove, HiDotsVertical, HiPencil } from "react-icons/hi";
+import { HiCheckCircle, HiDocumentRemove, HiDotsVertical, HiPencil } from "react-icons/hi";
 import { api } from "@/trpc/react";
-import { useEffect, useRef } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { formatDistance } from 'date-fns'
+import { ApplyModal } from "./apply-modal";
 
 interface AddJobModalProps {
     modalRef: React.RefObject<HTMLDialogElement>;
     refetchOffers: () => void;
     jobListingId: number;
+    candidateId: number;
 }
 
-export const OfferModal: React.FC<AddJobModalProps> = ({ modalRef, refetchOffers, jobListingId}) => {
+export const OfferModal: React.FC<AddJobModalProps> = ({ modalRef, refetchOffers, jobListingId, candidateId}) => {
 
-    const editModalRef = useRef<HTMLDialogElement>(null);
+    const applyModalRef = useRef<HTMLDialogElement>(null);
+    const showApplyModal = () => {
+        const modal = applyModalRef.current;
+        if (!modal) return null;
+        modal.showModal();
+    }
 
     const { data: offerData, refetch: refetchOffer } = api.jobListing.getJobListingById.useQuery({
         id: jobListingId
     });
 
+    const [applied, setApplied] = useState<boolean>(false);
+
     useEffect(() => {
-        console.log(jobListingId);
         refetchOffer();
-        console.log(offerData);
+    }, [applied]);
+
+    useEffect(() => {
+        setApplied(offerData?.applications?.find((application: { candidateId: number }) => application.candidateId === candidateId) ? true : false);
+    }, [offerData]);
+
+    useEffect(() => {
+        refetchOffer();
+        setApplied(offerData?.applications?.find((application: { candidateId: number }) => application.candidateId === candidateId) ? true : false);
     }, [jobListingId]);
-
-    const refetch = () => {
-        refetchOffer();
-        refetchOffers();
-    }
-
-    const removeJobListing = api.jobListing.deleteJobListing.useMutation({
-        onSuccess: () => {
-            console.log("Job Listing Deleted");
-            refetchOffers();
-            modalRef.current?.close();
-        },
-        onError: (error: any) => {
-            console.error(error);
-        }
-    });
-
-    const applyJobListing = api.application.useMutation({
 
     const relativeTime = formatDistance(new Date(offerData?.createdAt || new Date()), new Date(), { addSuffix: true });
 
@@ -58,7 +56,14 @@ export const OfferModal: React.FC<AddJobModalProps> = ({ modalRef, refetchOffers
                     <div className="modal-header mb-4">
                         <div className="flex justify-between">
                             <h1 className="text-xl font-bold my-2">{offerData?.title}</h1>
-                            <div className="btn bg-sky-400 text-white rounded-full">Apply</div>
+                            {applied ?
+                                <div className="rounded-full btn btn-success hover:bg-success no-animation cursor-default text-white"><HiCheckCircle className="text-xl"/> Applied </div>
+                                :
+                                <span>
+                                    <div onClick={showApplyModal} className="btn bg-sky-400 text-white rounded-full">Apply</div>
+                                    <ApplyModal modalRef={applyModalRef} setApplied={setApplied} jobListingId={jobListingId} candidateId={candidateId} />
+                                </span>
+                            }
                         </div>
                         {offerData?.status === "open" ?
                             <div className="rounded-full bg-success w-fit mb-4 text-white px-2">{offerData?.status}</div>

@@ -1,10 +1,22 @@
 'use client'
 
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
 
     const { data: session } = useSession();
+
+    const router = useRouter();
+    const redirectToProfile = () => {
+        if (session?.user?.userType === 'Candidate') {
+            router.push('/candidate/profile');
+        } else if (session?.user?.userType === 'Recruiter') {
+            router.push('/recruiter/profile');
+        } else {
+            router.push('/user/complete');
+        }
+    }
 
     return (
         <div className="fixed max-w-screen-xl navbar backdrop-blur-lg py-2 my-2 shadow-lg rounded-full z-20">
@@ -33,7 +45,7 @@ export function Navbar() {
                         <li><a href="#">Contact Us</a></li>
                     </ul>
                 </div>
-                <a className="btn btn-ghost rounded-full text-xl">CareerFit AI</a>
+                <a href="/" className="btn btn-ghost rounded-full text-xl">CareerFit AI</a>
             </div>
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1">
@@ -45,7 +57,7 @@ export function Navbar() {
             </div>
             {session?.user ? (
                 <div className="navbar-end">
-                    <a className="btn btn-ghost rounded-full">Profile</a>
+                    <a onClick={redirectToProfile} className="btn btn-ghost rounded-full">Profile</a>
                     <a className="btn bg-base-content text-white rounded-full" onClick={() => signOut()} >SignOut</a>
                 </div>
             ) : (

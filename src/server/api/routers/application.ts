@@ -78,10 +78,10 @@ export const applicationRouter = createTRPCRouter({
 
     
     getApplicationByCandidateId: publicProcedure
-      .input(z.object({ id: z.number() }))
+      .input(z.object({ id: z.string() }))
       .query(async ({ input, ctx }) => {
         return ctx.db.application.findMany({
-          where: { id: input.id },
+          where: { candidate: { user: { id: input.id } } },
           include: {
                 jobListing: {
                     include: {
@@ -100,14 +100,39 @@ export const applicationRouter = createTRPCRouter({
             },
         });
       }),
-
     
+    getApplicationsByRecruiterId: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input, ctx }) => {
+        return ctx.db.application.findMany({
+          where: { jobListing: { recruiter: { userId: input.id} } },
+          include: {
+            jobListing: {
+                include: {
+                recruiter: {
+                    include: {
+                      user: true,
+                    }
+                },
+                }
+            },
+            candidate: {
+                include: {
+                  user: true,
+                }
+            },
+            },
+        });
+      }
+    ),
+
     createApplication: publicProcedure
       .input(
         z.object({
             jobListingId: z.number(),
             candidateId: z.number(),
             status: z.string(),
+            coverLetter: z.string(),
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -116,6 +141,7 @@ export const applicationRouter = createTRPCRouter({
             jobListingId: input.jobListingId,
             candidateId: input.candidateId,
             status: input.status,
+            coverLetter: input.coverLetter,
           },
         });
       }),

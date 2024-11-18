@@ -1,15 +1,13 @@
-import { redirect } from 'next/navigation'
-import { auth } from "@/server/auth";
 import { HeroSection } from "@/app/_components/auth/hero-section";
 import { CompleteForm } from "@/app/_components/auth/complete/complete-form";
+import { auth } from "@/server/auth";
+import { redirect } from 'next/navigation';
 
 export default async function Page() {
 
     const session = await auth();
-    if (session) {
-        if (session.user.userType) {
-            redirect('/');
-        }
+    if (!session) {
+        redirect('/user/signin');
     }
 
     return (
