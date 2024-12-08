@@ -1,0 +1,9 @@
+fastapi==0.115.6
+uvicorn==0.32.1
+pydantic[email]==2.2.0
+motor==2.5.1
+bcrypt==4.2.1
+pyjwt
+python-multipart
+openai
+python-dotenv
