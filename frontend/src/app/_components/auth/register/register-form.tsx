@@ -52,7 +52,7 @@ export const RegisterForm = () => {
             }
         ).then((res) => {
             localStorage.setItem("authToken", res.data.access_token);
-            router.push("/");
+            router.push("/user/complete");
             setLoading(false);
         }).catch((err) => {
             setError(err.response.data.detail ?? err.response);

@@ -35,7 +35,7 @@ export function SigninForm() {
             password: userData.password
         }).then((res) => {
             localStorage.setItem("authToken", res.data.access_token);
-            router.push("/");
+            window.location.reload();
             setLoading(false);
         }).catch((err) => {
             setError(err.response.data.detail ?? err.response);
